@@ -1,0 +1,254 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation
+% LaTeX Template
+% Version 1.0 (10/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass{beamer}
+
+\mode<presentation> {
+
+% The Beamer class comes with a number of default slide themes
+% which change the colors and layouts of slides. Below this is a list
+% of all the themes, uncomment each in turn to see what they look like.
+
+%\usetheme{default}
+%\usetheme{AnnArbor}
+%\usetheme{Antibes}
+%\usetheme{Bergen}
+%\usetheme{Berkeley}
+%\usetheme{Berlin}
+%\usetheme{Boadilla}
+%\usetheme{CambridgeUS}
+%\usetheme{Copenhagen}
+%\usetheme{Darmstadt}
+%\usetheme{Dresden}
+%\usetheme{Frankfurt}
+%\usetheme{Goettingen}
+%\usetheme{Hannover}
+%\usetheme{Ilmenau}
+%\usetheme{JuanLesPins}
+%\usetheme{Luebeck}
+\usetheme{Madrid}
+%\usetheme{Malmoe}
+%\usetheme{Marburg}
+%\usetheme{Montpellier}
+%\usetheme{PaloAlto}
+%\usetheme{Pittsburgh}
+%\usetheme{Rochester}
+%\usetheme{Singapore}
+%\usetheme{Szeged}
+%\usetheme{Warsaw}
+
+% As well as themes, the Beamer class has a number of color themes
+% for any slide theme. Uncomment each of these in turn to see how it
+% changes the colors of your current slide theme.
+
+%\usecolortheme{albatross}
+%\usecolortheme{beaver}
+%\usecolortheme{beetle}
+%\usecolortheme{crane}
+%\usecolortheme{dolphin}
+%\usecolortheme{dove}
+%\usecolortheme{fly}
+%\usecolortheme{lily}
+%\usecolortheme{orchid}
+%\usecolortheme{rose}
+%\usecolortheme{seagull}
+%\usecolortheme{seahorse}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+
+\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+%\usepackage {tikz}
+\usepackage{tkz-graph}
+\GraphInit[vstyle = Shade]
+\tikzset{
+  LabelStyle/.style = { rectangle, rounded corners, draw,
+                        minimum width = 2em, fill = yellow!50,
+                        text = red, font = \bfseries },
+  VertexStyle/.append style = { inner sep=5pt,
+                                font = \normalsize\bfseries},
+  EdgeStyle/.append style = {->, bend left} }
+\usetikzlibrary {positioning}
+%\usepackage {xcolor}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title[Short title]{Check-in} % The short title appears at the bottom of every slide, the full title is only on the title page
+
+\author{Nathanael Roy} % Your name
+\institute[UC Riverside] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+{
+University of California \\ % Your institution for the title page
+\medskip
+}
+\date{\today} % Date, can be changed to a custom date
+
+\begin{document}
+
+%\begin{frame}
+%\titlepage % Print the title page as the first slide
+%\end{frame}
+
+%\begin{frame}
+%\frametitle{Overview} % Table of contents slide, comment this block out to remove it
+%\tableofcontents % Throughout your presentation, if you choose to use \section{} and \subsection{} commands, these will automatically be printed on this slide as an overview of your presentation
+%\end{frame}
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION SLIDES
+%----------------------------------------------------------------------------------------
+
+%------------------------------------------------
+
+\begin{frame}{Previous work: Context}
+    \begin{itemize}
+        \item 'Best Arm Identification' / 'Pure Exploration Bandits'\\
+            \emph{Simple Bayesian Algorithms for Best-Arm Identification}, Daniel Russo
+        \item $\theta = [.2, .3, \dots, .5, .1]$ (Bernoulli)
+        \item Best arm: ${arg max}_i\ \theta_i$
+        \item Possible objectives:
+            \begin{itemize}
+                \item Fixed \#samples: high confidence
+                \item Fixed confidence: few \#samples
+            \end{itemize}
+        \item Conventional approaches:
+            \begin{itemize}
+                \item Uniform sampling: Equal effort/measurements, not equal evidence.
+                \item Thompson sampling: Focus on estimated best, little evidence about alternatives.
+            \end{itemize}
+        \item Idea: Gather equal evidence by focusing on the 'threshold'.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Previous work: Algorithm: Top-two Thompson sampling}
+Given hyperparameter $\beta$, prior $\Pi_n$ at step $n$:\\
+\begin{algorithmic}
+\State $B \sim Bernoulli(\beta)$
+\State $\hat{\theta} \sim \Pi_n$
+\State $I = argmax_i\ \hat{\theta}$
+\If {$B = 0$}
+    \Repeat
+        \State $\hat{\theta} \sim \Pi_n$
+        \State $J = argmax_i\ \hat{\theta}$
+    \Until{$J \neq I$}
+    \State $I = J$
+\EndIf
+\end{algorithmic}
+Play $I$, observe reward and update priors.
+\end{frame}
+
+\begin{frame}{Previous work: Theory}
+    \begin{itemize}
+        \item Analysis of the convergence's exponent, i.e. $\lim_{n\to\infty} \frac{1}{n} \log \Pi_n(\Theta_{I*}^C) = \Gamma$
+        \item $\psi_{n, I*} = \Pr[I_n = I^*] $
+        \item Under all adaptive allocation rules that have $\lim_{n\to\infty} \psi_{n, I^*} = \beta$, TTTS with parameter $\beta$ has best exponent $\Gamma_\beta^*$. \\(Constrained optimality without tuning)
+        \item TTTS can be tuned to $\beta^* = argmax_\beta \Gamma_\beta^*$ and hence have the best overall possible exponent.\\ (Optimality with tuning)
+        \item $\Gamma^* \leq 2 \Gamma_{\frac{1}{2}}^*$, $\frac{\Gamma^*}{\Gamma_\beta^*} \leq max\{\frac{\beta^*}{\beta}, \frac{1-\beta^*}{1 - \beta}\}$ \\(Robustness)
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Project motivation}
+    \begin{itemize}
+        \item Best arm identification in practice often comes in different, more general shapes.
+            \begin{itemize}
+                \item \textbf{Top-m arms} (set)
+                \item Batch updates
+                \item Contextual arms
+                \item Correlated arms
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Project goal}
+    \begin{itemize}
+        \item Define top-m arms algorithm.
+        \item Determine and prove best possible convergence rate for top-m, $\Gamma^*$.
+        \item Determine and prove best possible convergence rate for 'constrained' class of algorithms, $\Gamma_\gamma^*$.
+        \item Prove that TTTS belongs to one such class.
+        \item Prove that TTTS is optimal in said class.
+        \item Prove 'robustness', i.e. relationship between constrained and non-constrained optimum.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Project: So far}
+    \begin{itemize}
+        \item Algorithm definition (not definite).
+        \item Attempt to understand both Russo's proofs and the interaction between them.
+            \begin{itemize}
+                \item Bottom-up
+                \item Top-down
+                    \begin{itemize}
+                        \item Breadth-first
+                        \item Depth-first
+                    \end{itemize}
+            \end{itemize}
+        \item Simulation.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Current algorithm}
+    Given a prior $\Pi_n$ at step $n$:
+    \begin{algorithmic}
+    \State $\hat{\theta} \sim \Pi_n$
+    \State $I_m = $ top-m$(\theta)$
+    \Repeat
+        \State $\hat{\theta} \sim \Pi_n$
+        \State $J_m = $ top-m$(\hat{\theta})$
+    \Until{$I_m \neq J_m$}
+    \State $I \sim \mathcal{U}(I_m \oplus J_m)$
+    \end{algorithmic}
+    Play $I$, observe reward and update priors.
+\end{frame}
+
+
+
+\begin{frame}{Simulation: Setting}
+    \begin{itemize}
+        \item Uniform Beta priors.
+        \item Confidence in option $I = [1,3,4]$ at step $n$:
+        \begin{align}
+            \Theta_I &= \{\theta \in \Theta, \text{top-m}(\theta) = I\} \\
+            \alpha_{I, n} &= \int_{\Theta_I} \pi_n(\theta) d\theta
+        \end{align}
+        \item Approximate via Monte Carlo method, $10^7$ samples $\mathcal{U}([0, 1]^{\#arms})$
+        \item For fixed \#samples, compute confidence ($\alpha_{I, n}$).
+        \item Average over 5-40 seeds.
+        \item $\theta = [.1, .2, .3, .4, .5]$
+        \item m = 3.
+    \end{itemize} 
+\end{frame}
+
+\begin{frame}{Simulation: Observations}
+    \begin{itemize}
+        \item $\sim$ 'goes in right direction'
+        \item Hypothesis: Edge of TTTS over uniform distribution should be greater when $\#arms$ and $m$ are 'further apart'.
+    \end{itemize} 
+\end{frame}
+
+\end{document}
