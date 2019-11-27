@@ -15,6 +15,8 @@
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage{appendixnumberbeamer}
+\usepackage{tikz}
+\usetikzlibrary{calc}
 
 %% Create argmax and argmin operators.
 %% Thin space, limits underneath in displays.
@@ -23,6 +25,7 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 \newcommand{\deq}{\dot{=}}
+\newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
 
 \usetheme{ETHbeamer}
 
@@ -46,20 +49,37 @@
 
 \begin{frame}
 \frametitle{Context}
-\begin{itemize}
-  \item Bandits, $k$ arms.
-  \item Frequentist setting: true best means $\theta^*$ and $m$ true best arms
-      $S^*$.
+\begin{itemize}[<+->]
+  \item Bandits, arms $[k]$.
   \item Reward distributions: 1-dimensional exponential family.
+  \item Frequentist setting: true means $\theta^*$ and $m$ true best arms
+      $S^* \subset [k]$.
   \item Top-$m$ arm identification goal: identifying $S^*$ with high confidence and few samples.
-  \item Confidence: $\max_{S} \Pr[S \text{ is top-}m | \mathcal{D}_n]$
+  \item Confidence: $\max_{S} \Pr[S \text{ is top-}m | \mathcal{D}_n]$ with $S \subset [k]$ and $|S| = m$.
   \item Fixed vs adaptive.
+  \item Allocation $\psi$ with $\psi_{n, l} = \Pr[I_n = l]$.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{191127-bandits_1.png}
+    \caption{Arms and their true means $\theta^*$. $k=4$.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{191127-bandits_2.png}
+    \caption{Arms, their true means $\theta^*$ and $S^*$. $k=4$, $m=2$.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
 \frametitle{Disclaimers}
-\begin{itemize}
+\begin{itemize}[<+->]
   \item Most of the work is inspired by Daniel Russo's \emph{Simple Bayesian
       algorithm for Best Arm Identification} \footnote{\url{https://arxiv.org/
       abs/1602.08448}}.
@@ -72,31 +92,36 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Optimality}
-\begin{itemize}
+\frametitle{Optimality of fixed allocation}
+\begin{itemize}[<+->]
   \item $\Pr[S^* \text{ is top-}m | \mathcal{D}_n] \rightarrow 1$ with $n
       \rightarrow \infty$ is not hard.
   \item What's hard: converge optimally fast.
   \item Goal: Maximize rate at which $\Pr[S^* \text{ is top-}m |
       \mathcal{D}_n] \rightarrow 1$ with $n \rightarrow \infty$.
   \item We prove that for any fixed allocation $\psi$:
-  \[\Pr[S^* \text{ is top-}m |
-      \mathcal{D}_n] = 1 - \exp\{-n \min_{i \notin S^*} \min_{j \in S^*} \min_{x \in \mathbb{R}} \psi_i d(\theta^*_i || x) + \psi_j d(\theta^*_j || x) \}\]
+    \begin{align}
+      &\Pr[S^* \text{ is top-}m | \mathcal{D}_n] = \\
+      &1 - \exp\{-n \min_{i \notin S^*} \min_{j \in S^*}
+          \tikzmark{infrastructure}{\min_{x \in \mathbb{R}} \psi_i
+          d_{KL}(\theta^*_i || x) + \psi_j d_{KL}(\theta^*_j || x)} \}
+    \end{align}
   \item As a consequence, the optimal minimizes the exponent.
-  \item $\psi^* = \argmax_{\psi} \min_{i \notin S^*}\min_{j \in S^*} \psi_i
-      d(\theta^*_i || x) + \psi_j d(\theta^*_j || x)$
+  \[\psi^* = \argmax_{\psi} \min_{i \notin S^*}\min_{j \in S^*} \min_{x \in
+      \mathbb{R}} \psi_i d_{KL}(\theta^*_i || x) + \psi_j d_{KL}(\theta^*_j || x)\]
 \end{itemize}
+\pause\tikz[overlay,remember picture]{\draw[draw=red,thick,fill
+    opacity=0.2] ($(infrastructure)+(-0,0.4)$) rectangle
+    ($(infrastructure)+(4.9,-0.2)$);}
 \end{frame}
 
 \begin{frame}
 \frametitle{Evidence for distinction}
-\begin{itemize}
-  \item $C_{j, i}(\psi_j, \psi_i) = \min_{x \in \mathbb{R}} \psi_i d(\theta^*_i
-      || x) + \psi_j d(\theta^*_j || x)$
+\begin{itemize}[<+->]
+  \item $C_{j, i}(\psi_j, \psi_i) = \min_{x \in \mathbb{R}} \psi_i d_{KL}
+      (\theta^*_i || x) + \psi_j d_{KL}(\theta^*_j || x)$
   \item Distinction comprises both frequency $\psi$ and distance of values,
       captured by KL divergence.
-  \item One might think of the worst optimal and best suboptimal to be relevant
-      for this minimization. Turns out all are relevant!
 \end{itemize}
 \end{frame}
 
@@ -117,7 +142,7 @@
 
 \begin{frame}
 \frametitle{Example: Setup}
-\begin{itemize}
+\begin{itemize}[<+->]
   \item Top-4.
   \item Given true underlying means:
     \begin{align}
@@ -144,7 +169,7 @@
 
 \begin{frame}
 \frametitle{Top-2$m$ XOR Thompson sampling}
-\begin{itemize}
+\begin{itemize}[<+->]
   \item Adaptive.
   \item Simple.
   \item Bayesian (remember: confidence).
@@ -174,12 +199,39 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{TXTS: Exemplary candidates}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{191127-bandits_1.png}
+    \caption{Arms and their true means $\theta^*$. $k=4$.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{TXTS: Exemplary candidates}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{191127-bandits_2.png}
+    \caption{Arms, their true means $\theta^*$ and $S_1$. $k=4$, $m=2$.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{TXTS: Exemplary candidates}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{191127-txts_2.png}
+    \caption{Arms, their true means $\theta^*$, $S_1$ and $S_2$. $k=4$, $m=2$.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
 \frametitle{TXTS: Empirical results}
-\begin{itemize}
+\begin{itemize}[<+->]
   \item Bernoulli rewards.
   \item Beta posteriors, $\alpha = \beta = 1$.
   \item Top-4.
-  \item $\theta^* &= [.1,\ .2,\ .3,\ .4,\ .5,\ \underbrace{.6,\ .7,\ .8,\
+  \item $\theta^* = [.1,\ .2,\ .3,\ .4,\ .5,\ \underbrace{.6,\ .7,\ .8,\
           .9}_\text{$S^*$}]$
 \end{itemize}
 \end{frame}
@@ -199,16 +251,15 @@
 \frametitle{TXTS: Empricial average allocation comparison}
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\textwidth]{191112-selection.png}
+  \includegraphics[width=\textwidth]{191127-allocations.png}
   \caption{Comparison of allocations for different methods and numbers of
       samples. 50 seeds.}
-  \label{fig:measurement_plan_comparison}
 \end{figure}
 \end{frame}
 
 \begin{frame}
 \frametitle{TXTS: Theoretical status quo}
-\begin{itemize}
+\begin{itemize}[<+->]
   \item Allocation $\psi$ hard to explicitly express in closed form.
   \item Established bounds on $\psi$.
   \item Proven $\Pr[S^* \text{ is top-}m | \mathcal{D}_n] \rightarrow 1$.
@@ -221,7 +272,11 @@
 
 \begin{frame}
 \frametitle{TXTS: Theoretical outlook}
-Prove overall convergence.
+Prove overall convergence, i.e. $\frac{1}{N}\sum_{n \in [N]} \psi \rightarrow \psi^*$.
+\end{frame}
+
+\begin{frame}
+Thanks!
 \end{frame}
 
 \appendix
@@ -260,7 +315,6 @@ The Bernoulli assumption allows us to solve the minimization over $x$ analytical
   \includegraphics[width=.55\textwidth]{190723-confidences.png}
   \caption{Confidence per steps for TXTS, uniform and Thompson sampling. 50
       seeds.}
-  \label{fig:confidences}
 \end{figure}
 \end{frame}
 
@@ -270,7 +324,6 @@ The Bernoulli assumption allows us to solve the minimization over $x$ analytical
   \centering
   \includegraphics[width=.35\textwidth]{190723-selections_2.png}
   \caption{TXTS empirical average allocation after 1000 steps. Arms ordered by true mean. 50 seeds.}
-  \label{fig:measurement_plan}
 \end{figure}
 \end{frame}
 
@@ -281,7 +334,6 @@ The Bernoulli assumption allows us to solve the minimization over $x$ analytical
     \begin{align}
       \forall l \in [k], \delta > 0: \sum_{n \in \mathbb{N}} \psi_{n, l}
           \mathbb{I}[\bar{\psi}_{n, l} \geq \psi^*_l + \delta] < \infty
-          \label{eq:sufficient_condition}
     \end{align}
     then $\bar{\psi}_{n} \rightarrow \psi^*$.
   \end{theorem}
