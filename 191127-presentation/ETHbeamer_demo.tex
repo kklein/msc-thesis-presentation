@@ -78,17 +78,10 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Disclaimers}
-\begin{itemize}[<+->]
-  \item Most of the work is inspired by Daniel Russo's \emph{Simple Bayesian
-      algorithm for Best Arm Identification} \footnote{\url{https://arxiv.org/
-      abs/1602.08448}}.
-  \item Convergence is reasoned about in a $\deq$ sense, with:
-\begin{align}
-  a_n \deq b_n \Leftrightarrow \lim_{n \rightarrow
-  \infty}\frac{1}{n}\log{\frac{a_n}{b_n}} \rightarrow 0
-\end{align}
-\end{itemize}
+\frametitle{Credit}
+Most of the work is inspired by Daniel Russo's \emph{Simple Bayesian
+algorithm for Best Arm Identification} \footnote{\url{https://arxiv.org/
+abs/1602.08448}}.
 \end{frame}
 
 \begin{frame}
@@ -101,8 +94,8 @@
       \mathcal{D}_n] \rightarrow 1$ with $n \rightarrow \infty$.
   \item We prove that for any fixed allocation $\psi$:
     \begin{align}
-      &\Pr[S^* \text{ is top-}m | \mathcal{D}_n] = \\
-      &1 - \exp\{-n \min_{i \notin S^*} \min_{j \in S^*}
+      &\Pr[S^* \text{ is top-}m | \mathcal{D}_n] \\
+      &\approx 1 - \exp\{-n \min_{i \notin S^*} \min_{j \in S^*}
           \tikzmark{infrastructure}{\min_{x \in \mathbb{R}} \psi_i
           d_{KL}(\theta^*_i || x) + \psi_j d_{KL}(\theta^*_j || x)} \}
     \end{align}
@@ -128,16 +121,18 @@
 \begin{frame}
 \frametitle{Characterization}
 \ETHbox{\textwidth}{% define the ETHbox
+\onslide<1->{
   \begin{theorem}[Characterization of optimal allocation]
   There is a unique fixed allocation $\psi^*$ maximizing the convergence rate of the posterior mass put on the true best arms. It enforces that:
   \[\forall j_1, j_2 \in S^*, \forall i_1, i_2 \notin S^*:
     C_{j, i}(\psi^*_{j_1}, \psi^*_{i_1}) = C_{j, i}(\psi^*_{j_2},
     \psi^*_{i_2})\]
-  \end{theorem}}
+  \end{theorem}}}
+  \onslide<2->{
   This leads to a slightly simpler convergence rate for the optimal allocation:
   \[\Pr[S^* \text{ is top-}m |
-      \mathcal{D}_n] = 1 - \exp\{-n\ C_{j, i}(\psi^*_j, \psi^*_i)\}\]
-  for any $j \in S^*$, $i \notin S^*$.
+      \mathcal{D}_n] \approx 1 - \exp\{-n\ C_{j, i}(\psi^*_j, \psi^*_i)\}\]
+  for any $j \in S^*$, $i \notin S^*$.}
 \end{frame}
 
 \begin{frame}
@@ -173,7 +168,7 @@
   \item Adaptive.
   \item Simple.
   \item Bayesian (remember: confidence).
-  \item 'Exact'.
+  \item Asymptotic consistency.
   \item Based on Thompson sampling and another layer of randomization.
   \item Idea: Always sample two distinct candidates.
   \item Goal: Convergence towards optimal fixed allocation.
@@ -297,6 +292,15 @@ Appendix.
       exponential, Pareto with known minimal value, chi-squared, normal
       distribution with known variance and more.
 \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Logarithmic equivalence}
+Convergence is reasoned about in a $\deq$ sense, with:
+\begin{align}
+  a_n \deq b_n \Leftrightarrow \lim_{n \rightarrow
+  \infty}\frac{1}{n}\log{\frac{a_n}{b_n}} \rightarrow 0
+\end{align}
 \end{frame}
 
 \begin{frame}
